@@ -1,0 +1,51 @@
+# mongoDB Deployment-Set
+
+# It uses a PVC and Storage Class (with CSI driver)
+
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: mongodb
+
+spec:
+  selector:
+    matchLabels:
+      app: mongodb
+  replicas: 1
+
+  template: # template for the pods
+    metadata:
+      labels:
+        app: mongodb
+
+    spec:
+      containers:
+        - name: mongodb
+          image: mongo:3.6.5-jessie
+          volumeMounts:
+            - name: aws-ebs
+              mountPath: /data/db
+      volumes:
+        - name: aws-ebs
+          # Refers to a PVC which itself refers to the storage class
+          persistentVolumeClaim:
+            claimName: mongo-pvc
+---
+# Service for mongoDB Deployment-Set pods
+
+kind: Service
+apiVersion: v1
+
+metadata:
+  name: fleetman-mongodb
+
+spec:
+  selector:
+    app: mongodb # the labelled pods which this service will manage
+
+  ports:
+    - name: mongoport
+      port: 27017 # the port on which mongoDB expose itself by default
+
+  type: ClusterIP # this database is exposed internally

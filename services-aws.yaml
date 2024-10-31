@@ -1,0 +1,78 @@
+# Only the webapp (front-end) service will be a load-balancer service,
+# which will be exposed on internet.
+# Other services will be only be exposed as clusterIP for security purposes.
+
+# NodePort Service for front-end (webapp)
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: fleetman-webapp
+
+spec:
+  selector:
+    app: webapp
+
+  ports:
+    - name: http
+      port: 80
+
+  type: LoadBalancer # The EKS load-balancer is used
+---
+# NodePort Service for ActiveMQ
+
+apiVersion: v1
+kind: Service
+
+metadata:
+  name: fleetman-queue
+
+spec:
+  selector:
+    app: queue
+
+  ports:
+    - name: http
+      port: 8161
+
+    - name: endpoint
+      port: 61616
+
+  type: ClusterIP
+
+---
+# ClusterIP Service for position-tracker
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleetman-position-tracker
+
+spec:
+  selector:
+    app: position-tracker
+
+  ports:
+    - name: http
+      port: 8080
+
+  type: ClusterIP
+
+---
+# NodePort Service for api-gateway
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: fleetman-api-gateway
+
+spec:
+  selector:
+    app: api-gateway
+
+  ports:
+    - name: http
+      port: 8080
+
+  type: ClusterIP

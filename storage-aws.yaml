@@ -1,0 +1,35 @@
+# Storage Class
+
+# It is using a EBS CSI Driver
+# In-tree provisioners are deprecated, CSI must be used
+
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+
+metadata:
+  name: cloud-ssd
+
+provisioner: ebs.csi.aws.com # Updated provisioner to use the CSI driver
+
+parameters:
+  type: gp3
+
+---
+# PVC
+# Claimed by mongodb deployment set
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+
+metadata:
+  name: mongo-pvc
+
+spec:
+  storageClassName: cloud-ssd # uses the storage class defined above
+
+  accessModes:
+    - ReadWriteOnce # this volume can be mounted as read-write by a single node only
+
+  resources:
+    requests:
+      storage: 11Gi
